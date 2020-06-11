@@ -15,7 +15,7 @@ class Line {
     v4: string;
     v5: string;
 }
-export default class NodeRedisAdapter implements FilteredAdapter {
+export class RedisAdapter implements FilteredAdapter {
     private redisInstance = null;
     private policies = null;
     private filtered = false;
@@ -138,7 +138,7 @@ export default class NodeRedisAdapter implements FilteredAdapter {
     }
 
     static async newAdapter(options: IConnectionOptions) {
-        const adapter = new NodeRedisAdapter(options);
+        const adapter = new RedisAdapter(options);
         await new Promise(resolve => adapter.redisInstance.on('connect', resolve));
         return adapter;
     }

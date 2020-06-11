@@ -47,6 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+exports.RedisAdapter = void 0;
 var casbin_1 = require("casbin");
 var redis = require("redis");
 var Line = /** @class */ (function () {
@@ -54,8 +55,8 @@ var Line = /** @class */ (function () {
     }
     return Line;
 }());
-var NodeRedisAdapter = /** @class */ (function () {
-    function NodeRedisAdapter(options) {
+var RedisAdapter = /** @class */ (function () {
+    function RedisAdapter(options) {
         this.redisInstance = null;
         this.policies = null;
         this.filtered = false;
@@ -76,13 +77,13 @@ var NodeRedisAdapter = /** @class */ (function () {
         };
         this.redisInstance = redis.createClient(__assign(__assign({}, options), this.deliveredOptions));
     }
-    NodeRedisAdapter.prototype.isFiltered = function () {
+    RedisAdapter.prototype.isFiltered = function () {
         return this.filtered;
     };
     /**
      * Helper Methods
      */
-    NodeRedisAdapter.prototype.savePolicyLine = function (ptype, rule) {
+    RedisAdapter.prototype.savePolicyLine = function (ptype, rule) {
         var line = new Line();
         line.ptype = ptype;
         if (rule.length > 0) {
@@ -105,7 +106,7 @@ var NodeRedisAdapter = /** @class */ (function () {
         }
         return line;
     };
-    NodeRedisAdapter.prototype.loadPolicyLine = function (line, model) {
+    RedisAdapter.prototype.loadPolicyLine = function (line, model) {
         console.log("load Policies line called");
         var lineText = line.ptype;
         if (line.v0) {
@@ -128,7 +129,7 @@ var NodeRedisAdapter = /** @class */ (function () {
         }
         casbin_1.Helper.loadPolicyLine(lineText, model);
     };
-    NodeRedisAdapter.prototype.storePolicies = function (policies) {
+    RedisAdapter.prototype.storePolicies = function (policies) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             console.log({ r: _this.redisInstance });
@@ -143,7 +144,7 @@ var NodeRedisAdapter = /** @class */ (function () {
             });
         });
     };
-    NodeRedisAdapter.prototype.reducePolicies = function (policies, ptype, rule) {
+    RedisAdapter.prototype.reducePolicies = function (policies, ptype, rule) {
         var i = rule.length;
         var policyIndex = policies.fieldIndex(function (policy) {
             var flag = false;
@@ -160,13 +161,13 @@ var NodeRedisAdapter = /** @class */ (function () {
         }
         return [];
     };
-    NodeRedisAdapter.newAdapter = function (options) {
+    RedisAdapter.newAdapter = function (options) {
         return __awaiter(this, void 0, void 0, function () {
             var adapter;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        adapter = new NodeRedisAdapter(options);
+                        adapter = new RedisAdapter(options);
                         return [4 /*yield*/, new Promise(function (resolve) { return adapter.redisInstance.on('connect', resolve); })];
                     case 1:
                         _a.sent();
@@ -178,7 +179,7 @@ var NodeRedisAdapter = /** @class */ (function () {
     /**
      * Adapter Methods
      */
-    NodeRedisAdapter.prototype.loadPolicy = function (model) {
+    RedisAdapter.prototype.loadPolicy = function (model) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
@@ -202,7 +203,7 @@ var NodeRedisAdapter = /** @class */ (function () {
             });
         });
     };
-    NodeRedisAdapter.prototype.loadFilteredPolicy = function (model, filter) {
+    RedisAdapter.prototype.loadFilteredPolicy = function (model, filter) {
         return __awaiter(this, void 0, void 0, function () {
             var key;
             return __generator(this, function (_a) {
@@ -235,7 +236,7 @@ var NodeRedisAdapter = /** @class */ (function () {
             });
         });
     };
-    NodeRedisAdapter.prototype.savePolicy = function (model) {
+    RedisAdapter.prototype.savePolicy = function (model) {
         return __awaiter(this, void 0, void 0, function () {
             var policyRuleAST, groupingPolicyAST, policies, _i, _a, _b, ptype, ast, _c, _d, rule, line, _e, _f, _g, ptype, ast, _h, _j, rule, line;
             var _this = this;
@@ -277,7 +278,7 @@ var NodeRedisAdapter = /** @class */ (function () {
             });
         });
     };
-    NodeRedisAdapter.prototype.addPolicy = function (sec, ptype, rule) {
+    RedisAdapter.prototype.addPolicy = function (sec, ptype, rule) {
         return __awaiter(this, void 0, void 0, function () {
             var line;
             return __generator(this, function (_a) {
@@ -288,7 +289,7 @@ var NodeRedisAdapter = /** @class */ (function () {
             });
         });
     };
-    NodeRedisAdapter.prototype.removePolicy = function (sec, ptype, rule) {
+    RedisAdapter.prototype.removePolicy = function (sec, ptype, rule) {
         return __awaiter(this, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
@@ -307,7 +308,7 @@ var NodeRedisAdapter = /** @class */ (function () {
             });
         });
     };
-    NodeRedisAdapter.prototype.removeFilteredPolicy = function (sec, ptype, fieldIndex) {
+    RedisAdapter.prototype.removeFilteredPolicy = function (sec, ptype, fieldIndex) {
         var fieldValues = [];
         for (var _i = 3; _i < arguments.length; _i++) {
             fieldValues[_i - 3] = arguments[_i];
@@ -318,6 +319,6 @@ var NodeRedisAdapter = /** @class */ (function () {
             });
         });
     };
-    return NodeRedisAdapter;
+    return RedisAdapter;
 }());
-exports["default"] = NodeRedisAdapter;
+exports.RedisAdapter = RedisAdapter;
