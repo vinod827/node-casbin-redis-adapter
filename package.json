@@ -4,7 +4,12 @@
   "description": "",
   "main": "src/adapter.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "precommit": "lint-staged",
+    "prepublish": "yarn run lint && yarn run test && yarn build",
+    "build": "rimraf lib && tsc",
+    "lint": "tslint \"src/**/*.ts\"",
+    "fix": "tslint \"src/**/*.ts\" --fix",
+    "test": "jest"
   },
   "keywords": [
     "node",
@@ -24,7 +29,6 @@
   ],
   "dependencies": {
     "casbin": "^5.0.4",
-    "redis": "^3.0.2",
-    "typescript": "^3.9.5"
+    "redis": "^3.0.2"
   }
 }

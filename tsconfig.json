@@ -1,13 +1,22 @@
 {
-    "compilerOptions": {
-      "target": "es6",
-      "declaration": true,
-      "declarationDir": "lib",
-      //"strict": true,
-      "outDir": "lib",
-      "strictPropertyInitialization": false,
-      "experimentalDecorators": true,
-      "emitDecoratorMetadata": true
-    },
-    "include": ["src/**/*.ts"]
-  }
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "importHelpers": false,
+    "noEmitHelpers": true,
+    "declaration": true,
+    "declarationDir": "src/",
+    //"strict": true,
+    "outDir": "src/",
+    "removeComments": true,
+    "strictPropertyInitialization": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
