@@ -1,5 +1,5 @@
 {
-  "name": "node-casbin-redis-adapter",
+  "name": "redis-adapter",
   "version": "1.0.0",
   "description": "",
   "main": "src/adapter.js",
@@ -14,10 +14,17 @@
     "redis-adapter",
     "casbin-redis"
   ],
-  "author": "Nanda Kishor Jeripothula",
-  "license": "MIT",
+  "author": "Node-Casbin",
+  "contributor": "Vinod Kumar Nair <vinod827@gmail.com>",
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
   "dependencies": {
-    "casbin": "^3.0.3",
-    "redis": "^2.8.0"
+    "casbin": "^5.0.4",
+    "redis": "^3.0.2",
+    "typescript": "^3.9.5"
   }
 }

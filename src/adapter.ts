@@ -1,4 +1,4 @@
-import { Helper } from 'casbin';
+import { Helper, Model, FilteredAdapter } from 'casbin';
 import * as redis from 'redis';
 import { promisify } from 'util';
 
@@ -7,7 +7,7 @@ interface IConnectionOptions {
     port: number;
 }
 class Line {
-    p_type: string;
+    ptype: string;
     v0: string;
     v1: string;
     v2: string;
@@ -15,9 +15,15 @@ class Line {
     v4: string;
     v5: string;
 }
-export class NodeRedisAdapter {
+export default class NodeRedisAdapter implements FilteredAdapter{
     private redisInstance = null;
     private policies = null;
+    private filtered = false;
+
+    public isFiltered(): boolean {
+        return this.filtered;
+    }
+
     private deliveredOptions = {
         retry_strategy(options) {
             if (options.error && options.error.code === 'ECONNREFUSED') {
@@ -40,7 +46,7 @@ export class NodeRedisAdapter {
 
     savePolicyLine(ptype, rule) {
         const line = new Line();
-        line.p_type = ptype;
+        line.ptype = ptype;
         if (rule.length > 0) {
             line.v0 = rule[0];
         }
@@ -68,7 +74,7 @@ export class NodeRedisAdapter {
     }
     loadPolicyLine(line, model) {
         console.log("load Policies line called");
-        let lineText = line.p_type;
+        let lineText = line.ptype;
         if (line.v0) {
             lineText += ", " + line.v0;
         }
@@ -108,7 +114,7 @@ export class NodeRedisAdapter {
         let i = rule.length;
         let policyIndex = policies.fieldIndex((policy) => {
             let flag = false;
-            flag = policy.p_type === ptype ? true : false;
+            flag = policy.ptype === ptype ? true : false;
             flag = i > 5 && policy.v5 === rule[5] ? true : false;
             flag = i > 4 && policy.v4 === rule[4] ? true : false;
             flag = i > 3 && policy.v3 === rule[3] ? true : false;
@@ -140,8 +146,7 @@ export class NodeRedisAdapter {
     /**
      * Adapter Methods
      */
-
-    loadPolicy(model) {
+    public async loadPolicy(model) {
         this.redisInstance.get("policies", (err, policies) => {
             var AdapterRef = this;
             console.log("Loading Policies...\n", policies);
@@ -149,7 +154,7 @@ export class NodeRedisAdapter {
                 let tempPolicies = [];
                 tempPolicies.push(
                     {
-                        'p_type': 'p',
+                        'ptype': 'p',
                         'v0': 'admin',
                         'v1': '/*',
                         'v2': 'GET',
@@ -157,7 +162,7 @@ export class NodeRedisAdapter {
                 );
                 tempPolicies.push(
                     {
-                        'p_type': 'p',
+                        'ptype': 'p',
                         'v0': 'notadmin',
                         'v1': '/',
                         'v2': 'POST'
@@ -185,7 +190,33 @@ export class NodeRedisAdapter {
         });
     }
 
-    async savePolicy(model) {
+    
+    public async loadFilteredPolicy(model: Model, filter: object) {
+        let key = filter['hashKey'];
+        key = "simpplr.com~vinod.kumar@simpplr.com~permissions";
+        return await new Promise(function(resolve, reject) {
+            this.redisInstance.hgetall(key, (err, policies) => {
+                var AdapterRef = this;
+                console.log("Loading filtered Policies...\n", policies);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(policies);
+                    policies = JSON.parse(policies);
+                    this.policies = policies;//For add and remove policies methods
+                    console.log(policies);
+                    policies.forEach(function (policy, index) {
+                        AdapterRef.loadPolicyLine(policy, model);
+                    });
+                    console.log("Filtered Policies are loaded...");
+                    this.filtered = true;
+                }
+            });
+
+        })
+    }
+
+    public async savePolicy(model: Model) {
         const policyRuleAST = model.model.get("p");
         const groupingPolicyAST = model.model.get("g");
         let policies = [];
@@ -204,6 +235,7 @@ export class NodeRedisAdapter {
         }
         this.storePolicies(policies);
     }
+
     async addPolicy(sec, ptype, rule) {
         const line = this.savePolicyLine(ptype, rule);
         this.policies.push(line);
@@ -224,8 +256,8 @@ export class NodeRedisAdapter {
         }
     }
 
-    async removeFilteredPolicy(sec, ptype, fieldIndex, ...fieldValues) {
+    
+    public async removeFilteredPolicy(sec: string, ptype: string, fieldIndex: number, ...fieldValues: string[]) {   
         return new Error("not implemented");
     }
-
 }
