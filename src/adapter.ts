@@ -15,7 +15,7 @@ class Line {
     v4: string;
     v5: string;
 }
-export default class NodeRedisAdapter implements FilteredAdapter{
+export default class NodeRedisAdapter implements FilteredAdapter {
     private redisInstance = null;
     private policies = null;
     private filtered = false;
@@ -150,32 +150,6 @@ export default class NodeRedisAdapter implements FilteredAdapter{
         this.redisInstance.get("policies", (err, policies) => {
             var AdapterRef = this;
             console.log("Loading Policies...\n", policies);
-            if (!policies) {
-                let tempPolicies = [];
-                tempPolicies.push(
-                    {
-                        'ptype': 'p',
-                        'v0': 'admin',
-                        'v1': '/*',
-                        'v2': 'GET',
-                    }
-                );
-                tempPolicies.push(
-                    {
-                        'ptype': 'p',
-                        'v0': 'notadmin',
-                        'v1': '/',
-                        'v2': 'POST'
-                    }
-                );
-                this.redisInstance.SET('policies', JSON.stringify(tempPolicies), (err, reply) => {
-                    if (!err) {
-                        return console.log("Writtern temp policy");
-                    }
-                    return console.error(err);
-                });
-                return new Error("No Policies Found");
-            }
             if (!err) {
                 policies = JSON.parse(policies);
                 this.policies = policies;//For add and remove policies methods
@@ -190,11 +164,10 @@ export default class NodeRedisAdapter implements FilteredAdapter{
         });
     }
 
-    
-    public async loadFilteredPolicy(model: Model, filter: object) {
+
+    public async loadFilteredPolicy(model: Model, filter: object): Promise<void> {
         let key = filter['hashKey'];
-        key = "simpplr.com~vinod.kumar@simpplr.com~permissions";
-        return await new Promise(function(resolve, reject) {
+        return await new Promise(function (resolve, reject) {
             this.redisInstance.hgetall(key, (err, policies) => {
                 var AdapterRef = this;
                 console.log("Loading filtered Policies...\n", policies);
@@ -216,24 +189,40 @@ export default class NodeRedisAdapter implements FilteredAdapter{
         })
     }
 
-    public async savePolicy(model: Model) {
+    public async savePolicy(model: Model): Promise<boolean> {
         const policyRuleAST = model.model.get("p");
         const groupingPolicyAST = model.model.get("g");
         let policies = [];
-        for (const [ptype, ast] of policyRuleAST) {
+
+        //var rows2 = <Array<any>>policyRuleAST;
+        //var rows2 = <Array<any>>groupingPolicyAST;
+
+        for (const [ptype, ast] of Object.entries(policyRuleAST)) {
             for (const rule of ast.policy) {
                 const line = this.savePolicyLine(ptype, rule);
                 policies.push(line);
             }
         }
 
-        for (const [ptype, ast] of groupingPolicyAST) {
+        for (const [ptype, ast] of Object.entries(groupingPolicyAST)) {
             for (const rule of ast.policy) {
                 const line = this.savePolicyLine(ptype, rule);
                 policies.push(line);
             }
         }
-        this.storePolicies(policies);
+        //this.storePolicies(policies);
+
+        return new Promise((resolve, reject) => {
+            console.log({ r: this.redisInstance });
+            this.redisInstance.del('policies');
+            this.redisInstance.set('policies', JSON.stringify(policies), (err, reply) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(true);
+                }
+            });
+        });
     }
 
     async addPolicy(sec, ptype, rule) {
@@ -256,8 +245,7 @@ export default class NodeRedisAdapter implements FilteredAdapter{
         }
     }
 
-    
-    public async removeFilteredPolicy(sec: string, ptype: string, fieldIndex: number, ...fieldValues: string[]) {   
-        return new Error("not implemented");
+    public async removeFilteredPolicy(sec: string, ptype: string, fieldIndex: number, ...fieldValues: string[]) {
+        throw new Error("Method not implemented");
     }
 }
