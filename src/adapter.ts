@@ -15,6 +15,7 @@ class Line {
     v5: string;
 }
 export class RedisAdapter implements FilteredAdapter {
+
     private redisInstance = null;
     private policies = null;
     private filtered = false;
@@ -165,22 +166,25 @@ export class RedisAdapter implements FilteredAdapter {
 
     public async loadFilteredPolicy(model: Model, filter: object): Promise<void> {
         let key = filter['hashKey'];
-        this.redisInstance.hgetall(key, (err, policies) => {
-            var AdapterRef = this;
-            console.log("Loading filtered Policies...\n", policies);
-            if (err) {
-                return err;
-            } else {
-                policies = JSON.parse(policies);
-                this.policies = policies;//For add and remove policies methods
-                console.log(policies);
-                policies.forEach(function (policy, index) {
-                    AdapterRef.loadPolicyLine(policy, model);
-                });
-                console.log("Filtered Policies are loaded...");
-                this.filtered = true;
-            }
-        });
+        return await new Promise(function (resolve, reject) {
+            this.redisInstance.hgetall(key, (err, policies) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(err);
+                    var AdapterRef = this;
+                    console.log("Loading filtered Policies...\n", policies);
+                    policies = JSON.parse(policies);
+                    this.policies = policies;//For add and remove policies methods
+                    console.log(policies);
+                    policies.forEach(function (policy, index) {
+                        AdapterRef.loadPolicyLine(policy, model);
+                    });
+                    console.log("Filtered Policies are loaded...");
+                    this.filtered = true;
+                }
+            });
+        })
     }
 
     public async savePolicy(model: Model): Promise<boolean> {
